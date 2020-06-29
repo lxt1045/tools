@@ -1,0 +1,160 @@
+{
+    "AgeRange": [
+        17,
+        25,
+        35,
+        50
+    ],
+    "BlockageGoroutine": 10000,
+    "Disconver": {
+        "HeartBeat": 30,
+        "HostName": "g_sence",
+        "Port": 8501,
+        "SrvName": "g_sence",
+        "Srvs": [
+            "http://192.168.31.242:8889/eureka"
+        ]
+    },
+    "FriendInfoURL": "http://192.168.31.233:8361/auth/v1/user/userChat/getFriendList",
+    "Game": {
+        "MaxAlive": 7,
+        "NotifyPre": 300,
+        "SyncBuf": 5,
+        "Topic": "j_game_mahjong_update",
+        "TopicGroup": "go_sence_game"
+    },
+    "Geo": {
+        "GeoAreas": {
+            "hotspots-0280-chunxilu": {
+                "Center": {
+                    "X": 30.6613282129,
+                    "Y": 104.083833057
+                },
+                "Radius": 1
+            },
+            "hotspots-0280-gaoxinqu": {
+                "Points[1]": {
+                    "X": 30.5945648344,
+                    "Y": 104.056693463
+                },
+                "Points[2]": {
+                    "X": 30.5425808832,
+                    "Y": 104.0566934636
+                },
+                "Points[3]": {
+                    "X": 30.5425808832,
+                    "Y": 104.0806948588
+                },
+                "Points[4]": {
+                    "X": 30.5945648344,
+                    "Y": 104.0806948588
+                }
+            }
+        },
+        "GeoCache": {
+            "0100": "127.0.0.1:8520",
+            "0280": "127.0.0.1:8520",
+            "0432": "127.0.0.1:8520",
+            "0511": "127.0.0.1:8520",
+            "0771": "127.0.0.1:8520",
+            "0875": "127.0.0.1:8520",
+            "0877": "127.0.0.1:8520",
+            "0931": "127.0.0.1:8520",
+            "0955": "127.0.0.1:8520",
+            "default": "127.0.0.1:8520",
+            "hotspots-0280-chunxilu": "127.0.0.1:8520",
+            "hotspots-0280-gaoxinqu": "127.0.0.1:8520"
+        }
+    },
+    "IOChanSize": 100000,
+    "Kafka": {
+        "Group": "go_sence",
+        "OffSet": -1,
+        "PartitionNum": 16,
+        "RetryTime": 1,
+        "RetryWait": 100,
+        "SendTimeOut": 500,
+        "ServerList": [
+            "192.168.31.242:9092"
+        ]
+    },
+    "KcpUpdataTime": 10,
+    "Listen": ":8501",
+    "Log": {
+        "Level": 5,
+        "LogPath": 0,
+        "Print": 1,
+        "SpanId": "g_sence",
+        "Topic": "logs"
+    },
+    "LogKafka": {
+        "Group": "go_sence",
+        "OffSet": -1,
+        "PartitionNum": 3,
+        "RetryTime": 1,
+        "RetryWait": 100,
+        "SendTimeOut": 500,
+        "ServerList": [
+            "192.168.31.242:9092"
+        ]
+    },
+    "MaxIdleTime": 10,
+    "MinHeartTime": 3,
+    "Mysql": {
+        "DbName": "vcity_chat",
+        "DbPwd": "chat_123",
+        "DbUser": "chatuser",
+        "ServerIp": "192.168.31.246",
+        "ServerPort": "3306"
+    },
+    "Redis": {
+        "AliveTime": 60,
+        "ConnTimeOut": 500,
+        "KeepAlive": 90,
+        "ReadTimeOut": 500,
+        "Server": [
+            "192.168.31.249:7000",
+            "192.168.31.249:7001",
+            "192.168.31.249:7002"
+        ],
+        "WriteTimeOut": 500
+    },
+    "StreetInfoURL": "http://192.168.31.242:8361/noauth/v1/geoinfo/nearestStreetByGeoCoord",
+    "TestMode": true,
+    "TimeZone": "Asia/Chongqing",
+    "UserInfoURL": "http://192.168.31.233:8361/auth/user/v2/userProfile/getUserInfoDetail",
+    "UserLabels": {
+        "健谈": 19,
+        "厚道": 14,
+        "双重人格": 7,
+        "喜欢简单": 8,
+        "女汉子": 2,
+        "宅": 11,
+        "安静": 22,
+        "强迫症": 3,
+        "敢爱敢恨": 9,
+        "文艺": 12,
+        "极品吃货": 5,
+        "热血": 20,
+        "理想主义": 21,
+        "老实人": 15,
+        "萌萌哒": 1,
+        "讲义气": 16,
+        "选择恐惧症": 10,
+        "逗比": 6,
+        "随性": 18,
+        "靠谱": 13,
+        "马甲线": 17
+    }
+}
+2018-09-10 16: 41: 16.071 [
+    35m[INFO
+    ][
+        0m &192.168.56.1&192.168.39.203 [
+            7
+        ] 0 src/services/D_Go_V2.0_sence/conf/conf.go g_sence_2 Init: 52 [
+            0,
+            0,
+            0
+        ] - {
+            4 Asia/Chongqing g_sence_2 0 : 8501 100000 0 0 Asia/Chongqing 10 10 3 true http: //192.168.31.233:8361/auth/user/v2/userProfile/getUserInfoDetail http://192.168.31.233:8361/auth/v1/user/userChat/getFriendList [17 25 35 50] map[健谈:19 安静:22 极品吃货:5 萌萌哒:1 靠谱:13 厚道:14 宅:11 理想主义:21 讲义气:16 逗比:6 马甲线:17 双重人格:7 强迫症:3 文艺:12 热血:20 老实人:15 喜欢简单:8 女汉子:2 敢爱敢恨:9 选择恐惧症:10 随性:18] {map[0771:127.0.0.1:8520 0875:127.0.0.1:8520 default:127.0.0.1:8520 hotspots-0280-chunxilu:127.0.0.1:8520 hotspots-0280-gaoxinqu:127.0.0.1:8520 0100:127.0.0.1:8520 0280:127.0.0.1:8520 0432:127.0.0.1:8520 0955:127.0.0.1:8520 0511:127.0.0.1:8520 0877:127.0.0.1:8520 0931:127.0.0.1:8520] map[hotspots-0280-gaoxinqu:{{0 0} 0 []} hotspots-0280-chunxilu:{{30.6613282129 104.083833057} 1 []}]}  0 0 0 0 0 0 []      {[192.168.31.249:7000 192.168.31.249:7001 192.168.31.249:7002] 500 500 500 90 60} {logs 5 1 Asia/Chongqing} {[192.168.31.242:9092] 500 1 100 0 -1 go_sence} {[192.168.31.242:9092] 500 1 100 0 -1 go_sence} { [] 0 0 0} {192.168.31.246 3306 chatuser chat_123 vcity_chat}}

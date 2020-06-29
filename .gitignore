@@ -13,3 +13,12 @@
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
+*.png
+net/udp/test/client/client
+net/udp/test/client-kcp/debug
+net/udp/test/server/debug
+*.prof
+net/udp/test/server/pprof001.svg
+*.svg
+net/udp/test/server/server
+net/udp/test/client-kcp/client-kcp
