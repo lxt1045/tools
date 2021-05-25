@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"sync"
 	"sync/atomic"
 	"time"
 )
@@ -25,15 +24,14 @@ func init() {
 }
 
 //kcpUpdataRun保证kcpUpdata()全局以goroutine形式启动一次
-func kcpUpdata(wg *sync.WaitGroup) {
+func kcpUpdata() {
 	if atomic.AddInt32(&kcpUpdataStatus, 1) > 1 {
 		atomic.AddInt32(&kcpUpdataStatus, -1)
 		log.Printf(" udp.Listen() Can only be called once")
 		return
 	}
-	wg.Add(1)
 	const kcpUpdataTime = 10
-	const maxIdleTime = 100 //最少10s
+	const maxIdleTime = 10000 //最少10s
 	for {
 		deadTime := time.Now().Unix() - maxIdleTime //认定僵死状态的时间
 		select {
@@ -48,7 +46,7 @@ func kcpUpdata(wg *sync.WaitGroup) {
 				if !ok {
 					continue
 				}
-				if atomic.LoadInt64(&conn.refleshTime) < deadTime {
+				if refleshTime := atomic.LoadInt64(&conn.refleshTime); refleshTime > 0 && refleshTime < deadTime {
 					fmt.Println("time remove")
 					removeConn(conn) //该连接已经凉了
 					continue
@@ -72,7 +70,6 @@ func kcpUpdata(wg *sync.WaitGroup) {
 			updataList.Remove(ekcp)
 		}
 	}
-	wg.Done()
 	log.Printf("udp.kcpUpdata exit")
 }
 
@@ -89,9 +86,16 @@ func KcpOutput(conn *net.UDPConn, addr *net.UDPAddr) (f func([]byte, int)) {
 		}
 		copy(bufSend[1:], buf[:size]) //copy的src和dst可以重叠，所以直接使用
 		encode8u(bufSend, Guar_YES)   //加个header信息
-		n, err := conn.WriteToUDP(bufSend[:size+1], addr)
-		if err != nil || n != size+1 {
-			log.Printf("error during kcp send:%v,n:%d\n", err, n)
+		if addr != nil {
+			n, err := conn.WriteToUDP(bufSend[:size+1], addr)
+			if err != nil || n != size+1 {
+				log.Printf("error during kcp send:%v,n:%d\n", err, n)
+			}
+		} else {
+			n, err := conn.Write(bufSend[:size+1])
+			if err != nil || n != size+1 {
+				log.Printf("error during kcp send:%v,n:%d\n", err, n)
+			}
 		}
 	}
 	return

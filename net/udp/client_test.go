@@ -23,7 +23,7 @@ func TestClient(t *testing.T) {
 		t.Fatalf("out, get error:%v", err)
 	}
 	pConn := &Conn{
-		conn:  conn,
+		conn:  nil, //conn,
 		kcp:   kcp.NewKCP(atomic.AddUint32(&conv, 1), KcpOutput1(conn)),
 		Mutex: new(sync.Mutex),
 	}

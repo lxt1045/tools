@@ -2,6 +2,7 @@ package udp
 
 import (
 	"container/list"
+	"fmt"
 	"log"
 	"net"
 	"sync"
@@ -34,7 +35,7 @@ func consistentHash(addr *net.UDPAddr) uint64 {
 }
 
 //通过*net.UDPAddr查找或生成一个*Conn，保证返回可用结果
-func addr2Conn(addr *net.UDPAddr, connUDP *net.UDPConn) (conn *Conn) {
+func addr2Conn(addr *net.UDPAddr, connUDP *net.UDPConn, conv uint32,isWriteTo bool) (conn *Conn) {
 	connID := consistentHash(addr)
 	I, ok := connsMap.Load(connID) //先用Load，而不是用LoadOrStore()，因为后者每次都生成一个数据结构成本有点高
 	if ok {
@@ -42,11 +43,24 @@ func addr2Conn(addr *net.UDPAddr, connUDP *net.UDPConn) (conn *Conn) {
 			return p
 		}
 	}
+	addrTo:=addr
+	if !isWriteTo{
+		addrTo=nil
+	}
+	pkcp := kcp.NewKCP(conv, KcpOutput(connUDP, addrTo))
+	pkcp.WndSize(128, 128) //设置最大收发窗口为128
+	// 第1个参数 nodelay-启用以后若干常规加速将启动
+	// 第2个参数 interval为内部处理时钟，默认设置为 10ms
+	// 第3个参数 resend为快速重传指标，设置为2
+	// 第4个参数 为是否禁用常规流控，这里禁止
+	pkcp.NoDelay(0, 10, 0, 0) // 默认模式
+	//conn.kcp.NoDelay(0, 10, 0, 1) // 普通模式，关闭流控等
+	//conn.kcp.NoDelay(1, 10, 2, 1) // 启动快速模式
 	p := &Conn{
 		addr:   addr,
 		connID: connID,
 		conn:   connUDP,
-		kcp:    nil,             //kcp.NewKCP(),//在第一次收到可靠连接的时候创建
+		kcp:    pkcp,            //kcp.NewKCP(),//在第一次收到可靠连接的时候创建
 		Mutex:  new(sync.Mutex), //kcp操作锁,因为有可能并发创建kcp,所以必须在Conn创建之初创建锁
 	}
 	I, loaded := connsMap.LoadOrStore(connID, p) //为了强一致性，用LoadOrStore()
@@ -55,6 +69,8 @@ func addr2Conn(addr *net.UDPAddr, connUDP *net.UDPConn) (conn *Conn) {
 			return p
 		}
 	}
+
+	updataAddCh <- p //通知updata()协程增加kcp
 	return p
 }
 
@@ -101,27 +117,63 @@ func addrRemoveConn(addr *net.UDPAddr) {
 	connIDRemoveConn(connID)
 }
 
+func (c *Conn) kcpSend(bufSend []byte) (err error) {
+	c.Lock()
+	defer c.Unlock()
+	if c.kcp != nil {
+		if m := c.kcp.Send(bufSend); m < 0 {
+			err = fmt.Errorf("kcp.Send error, bufSend:%v", bufSend)
+			return
+		}
+	} else {
+		err = fmt.Errorf("c.kcp == nil")
+		return
+	}
+	return
+}
 func (c *Conn) SendTo(pkg Pkg) (err error) {
+	bufSend, err := pkg.Encode()
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
 	//以下处理KCP消息
 	if pkg.Guar {
-		c.Lock()
-		if c.kcp != nil {
-			if m := c.kcp.Send(bufSend[:msgLen]); m < 0 {
-				log.Printf("kcp.Send error, pkg:%v", pkg)
-			}
-		} else {
-			log.Printf("c.kcp == nil, pkg:%v", pkg)
+		err = c.kcpSend(bufSend)
+		if err != nil {
+			log.Println(err)
+			return
 		}
-		c.Unlock()
 	} else {
-		connUDP := c
-		if c.conn != nil {
-			connUDP = c.conn
-		}
-		n, err = connUDP.WriteToUDP(bufSend[:msgLen], c.addr)
-		if err != nil || n != msgLen {
+		n, e := c.conn.WriteToUDP(bufSend, c.addr)
+		if err = e; err != nil || n != len(bufSend) {
 			log.Panicf("error during read:%v,n:%d\n", err, n)
-			break
+			return
+		}
+	}
+	return
+}
+
+func (c *Conn) Send(pkg Pkg) (err error) {
+	bufSend, err := pkg.Encode()
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	//以下处理KCP消息
+	if pkg.Guar {
+		err = c.kcpSend(bufSend)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+	} else {
+		n, e := c.conn.Write(bufSend)
+		if err = e; err != nil || n != len(bufSend) {
+			log.Panicf("error during read:%v,n:%d\n", err, n)
+			return
 		}
 	}
 	return
